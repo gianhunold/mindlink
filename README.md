@@ -2,6 +2,7 @@
 
 ## Database Creation
 
+```
 CREATE DATABASE mindlink;
 
 USE mindlink;
@@ -42,6 +43,7 @@ create table `users` (
 FOREIGN KEY (role) REFERENCES roles(id),
 FOREIGN KEY (game) REFERENCES playgame(id)
 );
+```
 
 ```
 MariaDB [mindlink]> SHOW TABLES;
