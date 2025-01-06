@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenames Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 120px;
+            height: 80px;
+            background-color: #ddd;
+            color: #333;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .card.revealed.red { background-color: #ff4d4d; color: white; }
+        .card.revealed.blue { background-color: #4d79ff; color: white; }
+        .card.revealed.neutral { background-color: #c0c0c0; color: #333; }
+        .card.revealed.assassin { background-color: #333; color: white; }
+        .button-container {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="newgamediv">
+        <input type="button" value="newgame" id="newgamebtn">
+    </div>
+    <div class="button-container">
+        <button onclick="revealAllCards()">Reveal Colors</button>
+    </div>
+    <div class="game-container" id="gameContainer"></div>
+
+    <script>
+        let words = [
+            "Apple", "Bridge", "Cat", "Dragon", "Eagle",
+            "Forest", "Gold", "Horse", "Island", "Jacket",
+            "King", "Lamp", "Mountain", "Night", "Ocean",
+            "Pirate", "Queen", "Robot", "Snake", "Tiger",
+            "Umbrella", "Violet", "Whale", "Xylophone", "Zebra"
+        ];
+
+        //New Game
+        const newgamebtn = document.getElementById("newgamebtn");
+        const newgamediv = document.getElementById("newgamediv");
+
+        const newgamewords = document.createElement("p");
+
+        async function newgame() {
+            const response = await fetch(`/newgame`);
+            const data = await response.json();
+
+            //newgamewords.innerText = data[0].
+            for (n in data) {
+                words[n] = data[n];
+            }
+            initGame();          
+        }
+        newgamebtn.addEventListener("click", () => newgame());
+
+        // Sample words for the game
+
+
+        // Assign roles to cards (e.g., 9 red, 8 blue, 7 neutral, 1 assassin)
+        function assignRoles() {
+            const roles = Array(9).fill("red")
+                .concat(Array(8).fill("blue"))
+                .concat(Array(7).fill("neutral"))
+                .concat(["assassin"]);
+            return roles.sort(() => Math.random() - 0.5);
+        }
+
+        // Initialize the game board
+        function initGame() {
+            const gameContainer = document.getElementById("gameContainer");
+            const roles = assignRoles();
+            gameContainer.innerHTML = "";  // Clear any existing cards
+
+            words.forEach((word, index) => {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.innerText = word;
+                
+                // Add click event to reveal the card
+                card.addEventListener("click", () => revealCard(card));
+                
+                // Append the card to the game container
+                gameContainer.appendChild(card);
+            });
+        }
+
+        // Reveal the card's color based on its role
+        async function revealCard(card) {
+            if (!card.classList.contains("revealed")) {                
+                //const data = await response.json();
+                let test = 0;
+
+                const response = await fetch(`/guess?guess=${test}`);
+                const data = await response.json();
+
+                console.log(data);
+                card.dataset.role = data[1];
+
+                const role = card.dataset.role;
+                if (role == "assassin") {
+                    alert("Finished");
+                }
+                card.classList.add("revealed", role);
+            }
+        }
+
+        // Reveal all cards' colors temporarily
+        function revealAllCards() {
+            const cards = document.querySelectorAll(".card");
+            cards.forEach(card => card.classList.add("revealed", card.dataset.role));
+
+            // Hide the colors after 3 seconds
+            setTimeout(() => {
+                cards.forEach(card => {
+                    if (!card.classList.contains("permanently-revealed")) {
+                        card.classList.remove("revealed", card.dataset.role);
+                    }
+                });
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // Start the game
+        //initGame();
+    </script>
+</body>
+</html>
